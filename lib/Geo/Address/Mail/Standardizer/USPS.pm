@@ -53,7 +53,7 @@ sub standardize {
     return $results;
 }
 
-# 212 Make everything uppercase
+# Make everything uppercase 212
 sub _uppercase {
     my ($self, $addr, $results) = @_;
 
@@ -134,7 +134,8 @@ L<http://pe.usps.com/text/pub28/welcome.htm>.
 =head1 WARNING
 
 This module is not a complete implementation of USPS Publication 28.  It
-intends to be, but that will probably take a while.
+intends to be, but that will probably take a while.  In the meantime it
+may be useful for testing or for pseudo-standardizaton.
 
 =head1 USPS Postal Address Standards Implemented
 
@@ -156,7 +157,8 @@ L<http://pe.usps.com/text/pub28/pub28apc_003.htm#ep538629>
 
 =item I<222 Punctuation>
 
-Punctuation is removed from all fields except C<postal_code>.
+Punctuation is removed from all fields except C<postal_code>.  Note that
+this isn't really kosher when using address ranges...
 
 L<http://pe.usps.com/text/pub28/pub28c2_007.htm>
 
