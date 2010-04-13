@@ -3,6 +3,8 @@ use Moose;
 
 with 'Geo::Address::Mail::Standardizer';
 
+our $VERSION = '0.01';
+
 use Geo::Address::Mail::Standardizer::Results;
 
 # Defined in C2 - "Secondary Unit Designators"
