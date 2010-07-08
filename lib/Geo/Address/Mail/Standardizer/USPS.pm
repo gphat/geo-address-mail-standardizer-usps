@@ -3,7 +3,7 @@ use Moose;
 
 with 'Geo::Address::Mail::Standardizer';
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Geo::Address::Mail::Standardizer::Results;
 
@@ -63,7 +63,7 @@ sub _uppercase {
     # the user cares if uppercasing is the only change.
     my @fields = qw(company name street street2 city state state country);
     foreach my $field (@fields) {
-        $addr->$field(uc($addr->$field));
+        $addr->$field(uc($addr->$field)) if defined($addr->$field);
     }
 }
 

@@ -1,5 +1,8 @@
 Revision history for Geo-Address-Mail-Standardizer::USPS
 
+0.02    Jul 8, 2010
+    * Fix undefined warnings on upper-case conversion
+
 0.01    Date/time
         First version, released on an unsuspecting world.
 
