@@ -3,41 +3,245 @@ use Moose;
 
 with 'Geo::Address::Mail::Standardizer';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Geo::Address::Mail::Standardizer::Results;
+use Data::Dumper;
 
 # Defined in C2 - "Secondary Unit Designators"
 my %range_designators = (
-    APARTMENT   => 'APT',
-    BUILDING    => 'BLDG',
-    DEPARTMENT  => 'DEPT',
-    FLOOR       => 'FL',
-    FLR         => 'FL',
-    HANGAR      => 'HNGR',
-    KEY         => 'KEY',
-    LOT         => 'LOT',
-    PIER        => 'PIER',
-    ROOM        => 'RM',
-    SLIP        => 'SLIP',
-    SPACE       => 'SPC',
-    STOP        => 'STOP',
-    SUITE       => 'STE',
-    TRAILER     => 'TRLR',
-    UNIT        => 'UNIT'
+    APT  => qr/(?:^|\b)AP(?:T|ARTMENT)\.?(?:\b|$)/i,
+    BLDG => qr/(?:^|\b)B(?:UI)?LD(?:IN)?G\.?(?:\b|$)/i,
+    DEPT => qr/(?:^|\b)DEP(?:ARTMEN)?T\.?(?:\b|$)/i,
+    FL   => qr/(?:^|\b)FL(?:OOR)?\.?(?:\b|$)/i,
+    HNGR => qr/(?:^|\b)HA?NGE?R\.?(?:\b|$)/i,
+    KEY  => qr/(?:^|\b)KEY\.?(?:\b|$)/i,
+    LOT  => qr/(?:^|\b)LOT\.?(?:\b|$)/i,
+    PIER => qr/(?:^|\b)PIER\.?(?:\b|$)/i,
+    RM   => qr/(?:^|\b)R(?:OO)?M\.?(?:\b|$)/i,
+    SLIP => qr/(?:^|\b)SLIP\.?(?:\b|$)/i,
+    SPC  => qr/(?:^|\b)SPA?CE?\.?(?:\b|$)/i,
+    STOP => qr/(?:^|\b)STOP\.?(?:\b|$)/i,
+    STE  => qr/(?:^|\b)S(?:UI)?TE\.?(?:\b|$)/i,
+    TRLR => qr/(?:^|\b)TR(?:AI)?LE?R\.?(?:\b|$)/i,
+    UNIT => qr/(?:^|\b)UNIT\.?(?:\b|$)/i,
 );
 
 # Defined in C2 - "Secondary Unit Designators", does not require secondary
 # RANGE to follow.
 my %designators = (
-    BASEMENT    => 'BSMT',
-    FRONT       => 'FRNT',
-    LOBBY       => 'LBBY',
-    LOWER       => 'LOWR',
-    OFFICE      => 'OFC',
-    PENTHOUSE   => 'PH',
-    REAR        => 'REAR',
-    SIDE        => 'SIDE',
+    BSMT => qr/(?:^|\b)BA?SE?M(?:EN)?T\.?(?:\b|$)/i,
+    FRNT => qr/(?:^|\b)FRO?NT\.?(?:\b|$)/i,
+    LBBY => qr/(?:^|\b)LO?BBY\.?(?:\b|$)/i,
+    LOWR => qr/(?:^|\b)LOWE?R\.?(?:\b|$)/i,
+    OFC  => qr/(?:^|\b)OF(?:FI)?CE?\.?(?:\b|$)/i,
+    PH   => qr/(?:^|\b)P(?:ENT)?H(?:OUSE)?\.?(?:\b|$)/i,
+    REAR => qr/(?:^|\b)REAR\.?(?:\b|$)/i,
+    SIDE => qr/(?:^|\b)SIDE\.?(?:\b|$)/i,
+    UPPR => qr/(?:^|\b)UPPE?R\.?(?:\b|$)/i,
+);
+
+# Defined in C1 - "Street Suffix Abbreviations"
+my %street_suffix_abbrev = (
+    ALY  => qr/(?:^|\b)AL+E*Y?\.?(?:\b|$)/i,
+    ANX  => qr/(?:^|\b)AN+E*X\.?(?:\b|$)/i,
+    ARC  => qr/(?:^|\b)ARC(?:ADE)?\.?(?:\b|$)/i,
+    AVE  => qr/(?:^|\b)AVE?(?:N(?:U(?:E)?)?)?\.?(?:\b|$)/i,
+    BYU  => qr/(?:^|\b)(?:BYU|BA?YO*[OU])\.?(?:\b|$)/i,
+    BCH  => qr/(?:^|\b)B(?:EA)?CH\.?(?:\b|$)/i,
+    BND  => qr/(?:^|\b)BE?ND\.?(?:\b|$)/i,
+    BLF  => qr/(?:^|\b)BLU?F+[^S]*\.?(?:\b|$)/i,
+    BLFS => qr/(?:^|\b)BLU?F+S\.?(?:\b|$)/i,
+    BTM  => qr/(?:^|\b)B(?:O?T+O?M|OT)\.?(?:\b|$)/i,
+    BLVD => qr/(?:^|\b)B(?:(?:OU)?LE?V(?:AR)?D|OULV?)\.?(?:\b|$)/i,
+    BR   => qr/(?:^|\b)BR(?:(?:A?NCH)|\.?)(?:\b|$)/i,
+    BRG  => qr/(?:^|\b)BRI?D?GE?\.?(?:\b|$)/i,
+    BRK  => qr/(?:^|\b)BRO*K[^S]*\.?(?:\b|$)/i,
+    BRKS => qr/(?:^|\b)BRO*KS\.?(?:\b|$)/i,
+    BG   => qr/(?:^|\b)B(?:UR)?G[^S]*\.?(?:\b|$)/i,
+    BGS  => qr/(?:^|\b)B(?:UR)?GS\.?(?:\b|$)/i,
+    BYP  => qr/(?:^|\b)BYP(?:A?S*)?\.?(?:\b|$)/i,
+    CP   => qr/(?:^|\b)CA?M?P[^E]*\.?(?:\b|$)/i,
+    CYN  => qr/(?:^|\b)CA?N?YO?N\.?(?:\b|$)/i,
+    CPE  => qr/(?:^|\b)CA?PE\.?(?:\b|$)/i,
+    CSWY => qr/(?:^|\b)C(?:AU)?SE?WA?Y\.?(?:\b|$)/i,
+    CTR  => qr/(?:^|\b)C(?:E?N?TE?RE?|ENT)[^S]*\.?(?:\b|$)/i,
+    CTRS => qr/(?:^|\b)C(?:E?N?TE?RE?|ENT)S\.?(?:\b|$)/i,
+    CIR  => qr/(?:^|\b)C(?:RCLE?|IRC?L?E?)[^S]*\.?(?:\b|$)/i,
+    CIRS => qr/(?:^|\b)C(?:RCLE?|IRC?L?E?)S\.?(?:\b|$)/i,
+    CLF  => qr/(?:^|\b)CLI?F+[^S]*\.?(?:\b|$)/i,
+    CLFS => qr/(?:^|\b)CLI?F+S\.?(?:\b|$)/i,
+    CLB  => qr/(?:^|\b)CLU?B\.?(?:\b|$)/i,
+    CMN  => qr/(?:^|\b)CO?M+O?N\.?(?:\b|$)/i,
+    COR  => qr/(?:^|\b)COR(?:NER)?[^S]*\.?(?:\b|$)/i,
+    CORS => qr/(?:^|\b)COR(?:NER)?S\.?(?:\b|$)/i,
+    CRSE => qr/(?:^|\b)C(?:OU)?RSE\.?(?:\b|$)/i,
+    CT   => qr/(?:^|\b)C(?:OU)?R?T[^RS]*\.?(?:\b|$)/i,
+    CTS  => qr/(?:^|\b)C(?:OU)?R?TS\.?(?:\b|$)/i,
+    CV   => qr/(?:^|\b)CO?VE?[^S]*\.?(?:\b|$)/i,
+    CVS  => qr/(?:^|\b)CO?VE?S\.?(?:\b|$)/i,
+    CRK  => qr/(?:^|\b)C(?:RE*K|[RK])\.?(?:\b|$)/i,
+    CRES => qr/(?:^|\b)CR(?:ES?C?E?(?:NT)?|SC?E?NT|R[ES])\.?(?:\b|$)/i,
+    CRST => qr/(?:^|\b)CRE?ST\.?(?:\b|$)/i,
+    XING => qr/(?:^|\b)(?:CRO?S+I?NG|XING)\.?(?:\b|$)/i,
+    XRD  => qr/(?:^|\b)(?:CRO?S+R(?:OA)?D|XR(?:OA)?D)\.?(?:\b|$)/i,
+    CURV => qr/(?:^|\b)CURVE?\.?(?:\b|$)/i,
+    DL   => qr/(?:^|\b)DA?LE?\.?(?:\b|$)/i,
+    DM   => qr/(?:^|\b)DA?M\.?(?:\b|$)/i,
+    DV   => qr/(?:^|\b)DI?V(?:I?DE?)?\.?(?:\b|$)/i,
+    DR   => qr/(?:^|\b)DR(?:I?VE?)?[^S]*\.?(?:\b|$)/i,
+    DRS  => qr/(?:^|\b)DR(?:I?VE?)?S\.?(?:\b|$)/i,
+    EST  => qr/(?:^|\b)EST(?:ATE)?[^S]*\.?(?:\b|$)/i,
+    ESTS => qr/(?:^|\b)EST(?:ATE)?S\.?(?:\b|$)/i,
+    EXPY => qr/(?:^|\b)EXP(?:R(?:ES+(?:WAY)?)?|[WY])?\.?(?:\b|$)/i,
+    EXT  => qr/(?:^|\b)EXT(?:E?N(?:S(?:IO)?N)?)?[^S]*\.?(?:\b|$)/i,
+    EXTS => qr/(?:^|\b)EXT(?:E?N(?:S(?:IO)?N)?)?S\.?(?:\b|$)/i,
+    FALL => qr/(?:^|\b)FALL[^S]*\.?(?:\b|$)/i,
+    FLS  => qr/(?:^|\b)FA?L+S\.?(?:\b|$)/i,
+    FRY  => qr/(?:^|\b)FE?R+Y\.?(?:\b|$)/i,
+    FLD  => qr/(?:^|\b)F(?:IE)?LD[^S]*\.?(?:\b|$)/i,
+    FLDS => qr/(?:^|\b)F(?:IE)?LDS\.?(?:\b|$)/i,
+    FLT  => qr/(?:^|\b)FLA?T[^S]*\.?(?:\b|$)/i,
+    FLTS => qr/(?:^|\b)FLA?TS\.?(?:\b|$)/i,
+    FRD  => qr/(?:^|\b)FO?RD[^S]*\.?(?:\b|$)/i,
+    FRDS => qr/(?:^|\b)FO?RDS\.?(?:\b|$)/i,
+    FRST => qr/(?:^|\b)FO?RE?STS?\.?(?:\b|$)/i,
+    FRG  => qr/(?:^|\b)FO?RGE?[^S]*\.?(?:\b|$)/i,
+    FRGS => qr/(?:^|\b)FO?RGE?S\.?(?:\b|$)/i,
+    FRK  => qr/(?:^|\b)FO?RK[^S]*\.?(?:\b|$)/i,
+    FRKS => qr/(?:^|\b)FO?RKS\.?(?:\b|$)/i,
+    FT   => qr/(?:^|\b)FO?R?T[^S]*\.?(?:\b|$)/i,
+    FWY  => qr/(?:^|\b)F(?:RE*)?WA?Y\.?(?:\b|$)/i,
+    GDN  => qr/(?:^|\b)G(?:A?R)?DE?N[^S]*\.?(?:\b|$)/i,
+    GDNS => qr/(?:^|\b)G(?:A?R)?DE?NS\.?(?:\b|$)/i,
+    GTWY => qr/(?:^|\b)GA?TE?WA?Y\.?(?:\b|$)/i,
+    GLN  => qr/(?:^|\b)GLE?N[^S]*\.?(?:\b|$)/i,
+    GLNS => qr/(?:^|\b)GLE?NS\.?(?:\b|$)/i,
+    GRN  => qr/(?:^|\b)GRE*N[^S]*\.?(?:\b|$)/i,
+    GRNS => qr/(?:^|\b)GRE*NS\.?(?:\b|$)/i,
+    GRV  => qr/(?:^|\b)GRO?VE?[^S]*\.?(?:\b|$)/i,
+    GRVS => qr/(?:^|\b)GRO?VE?S\.?(?:\b|$)/i,
+    HBR  => qr/(?:^|\b)H(?:(?:A?R)?BO?R|ARB)[^S]*\.?(?:\b|$)/i,
+    HBRS => qr/(?:^|\b)H(?:A?R)?BO?RS\.?(?:\b|$)/i,
+    HVN  => qr/(?:^|\b)HA?VE?N\.?(?:\b|$)/i,
+    HTS  => qr/(?:^|\b)H(?:(?:EI)?GH?)?TS?\.?(?:\b|$)/i,
+    HWY  => qr/(?:^|\b)HI?(?:GH?)?WA?Y\.?(?:\b|$)/i,
+    HL   => qr/(?:^|\b)HI?L+[^A-Z]*\.?(?:\b|$)/i,
+    HLS  => qr/(?:^|\b)HI?L+S\.?(?:\b|$)/i,
+    HOLW => qr/(?:^|\b)HO?L+O?WS?\.?(?:\b|$)/i,
+    INLT => qr/(?:^|\b)INLE?T\.?(?:\b|$)/i,
+    IS   => qr/(?:^|\b)IS(?:LA?ND)?[^A-Z]*\.?(?:\b|$)/i,
+    ISS  => qr/(?:^|\b)IS(?:LA?ND)?S\.?(?:\b|$)/i,
+    ISLE => qr/(?:^|\b)ISLES?\.?(?:\b|$)/i,
+    JCT  => qr/(?:^|\b)JU?CT(?:(?:IO)?N)?[^S]*\.?(?:\b|$)/i,
+    JCTS => qr/(?:^|\b)JU?CT(?:(?:IO)?N)?S\.?(?:\b|$)/i,
+    KY   => qr/(?:^|\b)KE?Y[^S]*\.?(?:\b|$)/i,
+    KYS  => qr/(?:^|\b)KE?YS\.?(?:\b|$)/i,
+    KNL  => qr/(?:^|\b)KNO?L+[^S]*\.?(?:\b|$)/i,
+    KNLS => qr/(?:^|\b)KNO?L+S\.?(?:\b|$)/i,
+    LK   => qr/(?:^|\b)LA?KE?[^S]*\.?(?:\b|$)/i,
+    LKS  => qr/(?:^|\b)LA?KE?S\.?(?:\b|$)/i,
+    LAND => qr/(?:^|\b)LAND[^A-Z]*\.?(?:\b|$)/i,
+    LNDG => qr/(?:^|\b)LA?ND(?:I?N)?G\.?(?:\b|$)/i,
+    LN   => qr/(?:^|\b)L(?:A?NES?|[AN])\.?(?:\b|$)/i,
+    LGT  => qr/(?:^|\b)LI?GH?T\.?(?:\b|$)/i,
+    LGTS => qr/(?:^|\b)LI?GH?TS\.?(?:\b|$)/i,
+    LF   => qr/(?:^|\b)L(?:OA)?F\.?(?:\b|$)/i,
+    LCK  => qr/(?:^|\b)LO?CK[^S]*\.?(?:\b|$)/i,
+    LCKS => qr/(?:^|\b)LO?CKS\.?(?:\b|$)/i,
+    LDG  => qr/(?:^|\b)LO?DGE?\.?(?:\b|$)/i,
+    LOOP => qr/(?:^|\b)LOOPS?\.?(?:\b|$)/i,
+    MALL => qr/(?:^|\b)MALL\.?(?:\b|$)/i,
+    MNR  => qr/(?:^|\b)MA?NO?R[^S]*\.?(?:\b|$)/i,
+    MNRS => qr/(?:^|\b)MA?NO?RS\.?(?:\b|$)/i,
+    MDW  => qr/(?:^|\b)M(?:EA?)?DO?W[^S]*\.?(?:\b|$)/i,
+    MDWS => qr/(?:^|\b)M(?:EA?)?DO?WS\.?(?:\b|$)/i,
+    MEWS => qr/(?:^|\b)MEWS\.?(?:\b|$)/i,
+    ML   => qr/(?:^|\b)MI?L+[^S]*\.?(?:\b|$)/i,
+    MLS  => qr/(?:^|\b)MI?L+S\.?(?:\b|$)/i,
+    MSN  => qr/(?:^|\b)MI?S+(?:IO)?N\.?(?:\b|$)/i,
+    MTWY => qr/(?:^|\b)MO?T(?:OR)?WA?Y\.?(?:\b|$)/i,
+    MT   => qr/(?:^|\b)M(?:OU)?N?T[^A-Z]*\.?(?:\b|$)/i,
+    MTN  => qr/(?:^|\b)M(?:OU)?N?T(?:AI?|I)?N[^S]*\.?(?:\b|$)/i,
+    MTNS => qr/(?:^|\b)M(?:OU)?N?T(?:AI?|I)?NS\.?(?:\b|$)/i,
+    NCK  => qr/(?:^|\b)NE?CK\.?(?:\b|$)/i,
+    ORCH => qr/(?:^|\b)ORCH(?:A?RD)?\.?(?:\b|$)/i,
+    OVAL => qr/(?:^|\b)OVA?L\.?(?:\b|$)/i,
+    OPAS => qr/(?:^|\b)O(?:VER)?PAS+\.?(?:\b|$)/i,
+    PARK => qr/(?:^|\b)PA?R?K[^A-RT-Z]*\.?(?:\b|$)/i,
+    PKWY => qr/(?:^|\b)PA?R?KW?A?YS?\.?(?:\b|$)/i,
+    PASS => qr/(?:^|\b)PASS[^A-Z]*\.?(?:\b|$)/i,
+    PSGE => qr/(?:^|\b)PA?S+A?GE\.?(?:\b|$)/i,
+    PATH => qr/(?:^|\b)PATHS?\.?(?:\b|$)/i,
+    PIKE => qr/(?:^|\b)PIKES?\.?(?:\b|$)/i,
+    PNE  => qr/(?:^|\b)PI?NE[^S]*\.?(?:\b|$)/i,
+    PNES => qr/(?:^|\b)PI?NES\.?(?:\b|$)/i,
+    PL   => qr/(?:^|\b)PL(?:ACE)?[^A-Z]*\.?(?:\b|$)/i,
+    PLN  => qr/(?:^|\b)PL(?:AI)?N[^ES]*\.?(?:\b|$)/i,
+    PLNS => qr/(?:^|\b)PL(?:AI)?NE?S\.?(?:\b|$)/i,
+    PLZ  => qr/(?:^|\b)PLA?ZA?\.?(?:\b|$)/i,
+    PT   => qr/(?:^|\b)P(?:OI)?N?T[^S]*\.?(?:\b|$)/i,
+    PTS  => qr/(?:^|\b)P(?:OI)?N?TS\.?(?:\b|$)/i,
+    PRT  => qr/(?:^|\b)PO?RT[^S]*\.?(?:\b|$)/i,
+    PRTS => qr/(?:^|\b)PO?RTS\.?(?:\b|$)/i,
+    PR   => qr/(?:^|\b)PR(?:(?:AI?)?R(?:IE)?|[^KT]?)?\.?(?:\b|$)/i,
+    RADL => qr/(?:^|\b)RAD(?:I[AE]?)?L?\.?(?:\b|$)/i,
+    RAMP => qr/(?:^|\b)RAMP\.?(?:\b|$)/i,
+    RNCH => qr/(?:^|\b)RA?NCH(?:E?S)?\.?(?:\b|$)/i,
+    RPD  => qr/(?:^|\b)RA?PI?D[^S]*\.?(?:\b|$)/i,
+    RPDS => qr/(?:^|\b)RA?PI?DS\.?(?:\b|$)/i,
+    RST  => qr/(?:^|\b)RE?ST\.?(?:\b|$)/i,
+    RDG  => qr/(?:^|\b)RI?DGE?[^S]*\.?(?:\b|$)/i,
+    RDGS => qr/(?:^|\b)RI?DGE?S\.?(?:\b|$)/i,
+    RIV  => qr/(?:^|\b)RI?VE?R?\.?(?:\b|$)/i,
+    RD   => qr/(?:^|\b)(?:^|\b)R(?:OA)?D[^A-Z]*\.?(?:\b|$)(?:\b|$)/i,
+    RDS  => qr/(?:^|\b)R(?:OA)?DS\.?(?:\b|$)/i,
+    RTE  => qr/(?:^|\b)R(?:OU)?TE\.?(?:\b|$)/i,
+    ROW  => qr/(?:^|\b)ROW\.?(?:\b|$)/i,
+    RUE  => qr/(?:^|\b)RUE\.?(?:\b|$)/i,
+    RUN  => qr/(?:^|\b)RUN\.?(?:\b|$)/i,
+    SHL  => qr/(?:^|\b)SH(?:OA)?L[^S]*\.?(?:\b|$)/i,
+    SHLS => qr/(?:^|\b)SH(?:OA)?LS\.?(?:\b|$)/i,
+    SHR  => qr/(?:^|\b)SH(?:OA?)?RE?[^S]*\.?(?:\b|$)/i,
+    SHRS => qr/(?:^|\b)SH(?:OA?)?RE?S\.?(?:\b|$)/i,
+    SKWY => qr/(?:^|\b)SKY?W?A?YS?\.?(?:\b|$)/i,
+    SPG  => qr/(?:^|\b)SP(?:RI?)?N?G[^S]*\.?(?:\b|$)/i,
+    SPGS => qr/(?:^|\b)SP(?:RI?)?N?GS\.?(?:\b|$)/i,
+    SPUR => qr/(?:^|\b)SPURS?\.?(?:\b|$)/i,
+    SQ   => qr/(?:^|\b)SQU?A?R?E?[^S]*\.?(?:\b|$)/i,
+    SQS  => qr/(?:^|\b)SQU?A?R?E?S\.?(?:\b|$)/i,
+    STA  => qr/(?:^|\b)ST(?:N|AT?(?:IO)?N?)\.?(?:\b|$)/i,
+    STRA => qr/(?:^|\b)STR(?:VN|AV?E?N?U?E?)\.?(?:\b|$)/i,
+    STRM => qr/(?:^|\b)STRE?A?ME?\.?(?:\b|$)/i,
+    ST   => qr/(?:^|\b)ST(?:\.|R(?:EE)?T?\.?)?(?:\b|$)/i,
+    STS  => qr/(?:^|\b)STR?E*T?S\.?(?:\b|$)/i,
+    SMT  => qr/(?:^|\b)SU?M+I?T+\.?(?:\b|$)/i,
+    TER  => qr/(?:^|\b)TER(?:R(?:ACE)?)?\.?(?:\b|$)/i,
+    TRWY => qr/(?:^|\b)TH?R(?:OUGH)?WA?Y\.?(?:\b|$)/i,
+    TRCE => qr/(?:^|\b)TRA?CES?\.?(?:\b|$)/i,
+    TRAK => qr/(?:^|\b)TRA?C?KS?\.?(?:\b|$)/i,
+    TRFY => qr/(?:^|\b)TRA?F(?:FICWA)?Y\.?(?:\b|$)/i,
+    TRL  => qr/(?:^|\b)TR(?:(?:AI)?LS?\.?|\.?)(?:\b|$)/i,
+    TUNL => qr/(?:^|\b)TUNN?E?LS?\.?(?:\b|$)/i,
+    TPKE => qr/(?:^|\b)T(?:U?RN?)?PI?KE?\.?(?:\b|$)/i,
+    UPAS => qr/(?:^|\b)U(?:NDER)?PA?SS?\.?(?:\b|$)/i,
+    UN   => qr/(?:^|\b)U(?:NIO)?N[^IS]*\.?(?:\b|$)/i,
+    UNS  => qr/(?:^|\b)U(?:NIO)?NS\.?(?:\b|$)/i,
+    VLY  => qr/(?:^|\b)VA?LL?E?Y[^S]*\.?(?:\b|$)/i,
+    VLYS => qr/(?:^|\b)VA?LL?E?YS\.?(?:\b|$)/i,
+    VIA  => qr/(?:^|\b)V(?:IA)?(?:DU?CT)?\.?(?:\b|$)/i,
+    VW   => qr/(?:^|\b)V(?:IE)?W[^S]?\.?(?:\b|$)/i,
+    VWS  => qr/(?:^|\b)V(?:IE)?WS\.?(?:\b|$)/i,
+    VLG  => qr/(?:^|\b)V(?:LG|ILL(?:I?AGE?)?)[^ES]?\.?(?:\b|$)/i,
+    VLGS => qr/(?:^|\b)V(?:LG|ILL(?:I?AGE?)?)[^E]?S\.?(?:\b|$)/i,
+    VL   => qr/(?:^|\b)V(?:L[^GLY]*|I?LL?E)\.?(?:\b|$)/i,
+    VIS  => qr/(?:^|\b)VI?S(?:TA?)?\.?(?:\b|$)/i,
+    WALK => qr/(?:^|\b)WALKS?\.?(?:\b|$)/i,
+    WALL => qr/(?:^|\b)WALL\.?(?:\b|$)/i,
+    WAY  => qr/(?:^|\b)WA?Y[^S]*\.?(?:\b|$)/i,
+    WAYS => qr/(?:^|\b)WA?YS\.?(?:\b|$)/i,
+    WL   => qr/(?:^|\b)WE?LL?[^S]*\.?(?:\b|$)/i,
+    WLS  => qr/(?:^|\b)WE?LL?S\.?(?:\b|$)/i,
 );
 
 sub standardize {
@@ -45,8 +249,7 @@ sub standardize {
 
     my $newaddr = $address->clone;
     my $results = Geo::Address::Mail::Standardizer::Results->new(
-        standardized_address => $newaddr
-    );
+        standardized_address => $newaddr );
 
     $self->_uppercase($newaddr, $results);
     $self->_remove_punctuation($newaddr, $results);
@@ -84,7 +287,7 @@ sub _remove_punctuation {
 }
 
 # Replace Secondary Address Unit Designators, 213
-# Uses Designators from 213.1 and Appendix C2
+# Uses Designators from 213.1, Appendix C1, and Appendix C2
 sub _replace_designators {
     my ($self, $addr, $results) = @_;
 
@@ -93,11 +296,25 @@ sub _replace_designators {
         my $val = $addr->$field;
         next unless defined($val);
 
-        foreach my $rd (keys(%range_designators)) {
+        foreach my $rd ( sort { $a cmp $b } keys(%range_designators) ) {
+            if ( $val =~ $range_designators{$rd} ) {
+                $val =~ s/$range_designators{$rd}/$rd/gi;
+                $results->set_changed( $field, $val );
+                $addr->$field($val);
+            }
+        }
 
-            if($val =~ /$rd/) {
-                my $repl = $range_designators{$rd};
-                $val =~ s/\b$rd\b/$repl/g;
+        foreach my $d ( sort { $a cmp $b } keys(%designators) ) {
+            if ( $val =~ $designators{$d} ) {
+                $val =~ s/$designators{$d}/$d/gi;
+                $results->set_changed( $field, $val );
+                $addr->$field($val);
+            }
+        }
+
+        foreach my $sd ( sort { $a cmp $b } keys(%street_suffix_abbrev) ) {
+            if ( $val =~ $street_suffix_abbrev{$sd} ) {
+                $val =~ s/$street_suffix_abbrev{$sd}/$sd/gi;
                 $results->set_changed($field, $val);
                 $addr->$field($val);
             }
@@ -152,6 +369,10 @@ L<http://pe.usps.com/text/pub28/pub28c2_002.htm>
 =item I<213.1 Common Designators>
 
 L<http://pe.usps.com/text/pub28/pub28c2_003.htm>
+
+Also, Appendix C1
+
+L<http://pe.usps.com/text/pub28/pub28apc_002.html>
 
 Also, Appendix C2
 
