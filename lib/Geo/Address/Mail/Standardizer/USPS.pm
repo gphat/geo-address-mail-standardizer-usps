@@ -194,7 +194,7 @@ my %street_suffix_abbrev = (
     RDG  => qr/(?:^|\b)RI?DGE?[^S]*\.?(?:\b|$)/i,
     RDGS => qr/(?:^|\b)RI?DGE?S\.?(?:\b|$)/i,
     RIV  => qr/(?:^|\b)RI?VE?R?\.?(?:\b|$)/i,
-    RD   => qr/(?:^|\b)(?:^|\b)R(?:OA)?D[^A-Z]*\.?(?:\b|$)(?:\b|$)/i,
+    RD   => qr/(?:^|\b)R(?:OA)?D[^A-Z]*\.?(?:\b|$)(?:\b|$)/i,
     RDS  => qr/(?:^|\b)R(?:OA)?DS\.?(?:\b|$)/i,
     RTE  => qr/(?:^|\b)R(?:OU)?TE\.?(?:\b|$)/i,
     ROW  => qr/(?:^|\b)ROW\.?(?:\b|$)/i,
@@ -244,6 +244,118 @@ my %street_suffix_abbrev = (
     WLS  => qr/(?:^|\b)WE?LL?S\.?(?:\b|$)/i,
 );
 
+# Defined in B - "Two-Letter State and Possession Abbreviations"
+my %state_province_abbrev = (
+        AL =>  qr/(?:^|\b)AL(?:A(?:\.|BAMA)?)?\.?(?:\b|$)/i,
+        AK =>  qr/(?:^|\b)A(?:K|LAS(?:KA?)?)\.?(?:\b|$)/i,
+        AS =>  qr/(?:^|\b)
+            A(?:M(?:ER(?:ICAN)?)?)?\.?
+            \s*
+            S(?:AM(?:OA)?)?\.?
+            |A\.?\s*S\.?
+            (?:\b|$)/ix,
+        AZ =>  qr/(?:^|\b)A(?:Z\.?|RI(?:\.|Z(?:\.|ONA)?)?)(?:\b|$)/i,
+        AR =>  qr/(?:^|\b)AR(?:\.|K(?:\.|ANSAS))(?:\b|$)/i,
+        CA =>  qr/(?:^|\b)CA(?:\.|L(?:\.|IF(?:\.|ORNIA)?))(?:\b|$)/i,
+        CO =>  qr/(?:^|\b)CO(?:\.|L(?:\.|O(?:\.|RADO)?)?)(?:\b|$)/i,
+        CT =>  qr/(?:^|\b)C(?:T\.?|ONN(?:\.|ECTICUT)?)(?:\b|$)/i,
+        DE =>  qr/(?:^|\b)DE(?:\.|L(?:\.|EWARE)?)(?:\b|$)/i,
+        DC =>  qr/(?:^|\b)
+            D(?:\.|IST(?:\.|RICT)?)?
+            \s*
+            (?:O[.F]?)?
+            \s*
+            C(?:\.|OL(?:\.|UM(?:\.|BIA)?)?)?
+            (?:\b|$)/ix,
+        FM =>  qr/(?:^|\b)
+            F(?:\.|ED(?:\.|ERATED)?)?
+            \s*
+            (?:S(?:T(?:ATES?)?)?\.?)?
+            \s*
+            (?:O[.F]?)?
+            \s*
+            M(?:IC(?:RO(?:NESIA)?)?)?\.?
+            (?:\b|$)/ix,
+        FL =>  qr/(?:^|\b)F(?:L(?:ORID?)?A?)\.?(?:\b|$)/i,
+        GA =>  qr/(?:^|\b)G(?:EORGI)?A\.?(?:\b|$)/i,
+        GU =>  qr/(?:^|\b)GU(?:\.|AM)?(?:\b|$)/i,
+        HI =>  qr/(?:^|\b)H(?:AWAI)?I\.?(?:\b|$)/i,
+        ID =>  qr/(?:^|\b)ID(?:\.|AHO)?(?:\b|$)/i,
+        IL =>  qr/(?:^|\b)IL(?:\.|L(?:\.|INOIS)?)?(?:\b|$)/i,
+        IN =>  qr/(?:^|\b)IN(?:D(?:\.|IANA)?)?\.?(?:\b|$)/i,
+        IA =>  qr/(?:^|\b)I(?:OW)?A\.?(?:\b|$)/i,
+        KS =>  qr/(?:^|\b)K(?:AN)?(?:SA)?(?:S)?\.?(?:\b|$)/i,
+        KY =>  qr/(?:^|\b)K(?:EN)?(?:TUCK)?(?:Y)?\.?(?:\b|$)/i,
+        LA =>  qr/(?:^|\b)L(?:OUIS)?(?:IAN)?A?\.?(?:\b|$)/i,
+        ME =>  qr/(?:^|\b)M(?:AIN)?E\.?(?:\b|$)/i,
+        MH =>  qr/(?:^|\b)(?:MARSH(?:ALL?)?\.?\s*IS(?:LANDS?)?|MH)\.?(?:\b|$)/i,
+        MD =>  qr/(?:^|\b)M(?:ARYLA?N)?D\.?(?:\b|$)/i,
+        MA =>  qr/(?:^|\b)MA(?:SS(?:\.|ACHUSETTS)?)?\.?(?:\b|$)/i,
+        MI =>  qr/(?:^|\b)MI(?:CH(?:IGAN)?)?\.?(?:\b|$)/i,
+        MN =>  qr/(?:^|\b)M(?:IN)?N(?:ESOTA)?\.?(?:\b|$)/i,
+        MS =>  qr/(?:^|\b)M(?:IS)?S(?:ISSIPPI)?\.?(?:\b|$)/i,
+        MO =>  qr/(?:^|\b)M(?:ISS)?O(?:URI)?\.?(?:\b|$)/i,
+        MT =>  qr/(?:^|\b)M(?:ON)?T(?:ANA)?\.?(?:\b|$)/i,
+        NE =>  qr/(?:^|\b)NEB?(?:R(?:ASKA)?)?\.?(?:\b|$)/i,
+        NV =>  qr/(?:^|\b)NE?V(?:ADA)?\.?(?:\b|$)/i,
+        NH =>  qr/(?:^|\b)N(?:EW)?\.?\s*H(?:AMPS?(?:HIRE)?)?\.?(?:\b|$)/i,
+        NJ =>  qr/(?:^|\b)N(?:EW)?\.?\s*J(?:ERS?(?:EY)?)?\.?(?:\b|$)/i,
+        NM =>  qr/(?:^|\b)N(?:EW)?\.?\s*M(?:EX(?:ICO)?)?\.?(?:\b|$)/i,
+        NY =>  qr/(?:^|\b)N(?:EW)?\.?\s*Y(?:ORK)?\.?(?:\b|$)/i,
+        NC =>  qr/(?:^|\b)N(?:OR)?(?:TH)?\.?\s*C(?:AR(?:OLINA?)?)?\.?(?:\b|$)/i,
+        ND =>  qr/(?:^|\b)N(?:OR)?(?:TH)?\.?\s*D(?:AK(?:OTA)?)?\.?(?:\b|$)/i,
+        MP =>  qr/(?:^|\b)
+            (?:N(?:OR)?(?:TH(?:ERN)?)?\.?
+                \s*
+                MARI?(?:ANA)?\.?
+                \s*
+                I(?:S(?:LANDS?)?)?\.?
+            |MP\.?)
+            (?:\b|$)/ix,
+        OH =>  qr/(?:^|\b)OH(?:IO)?\.?(?:\b|$)/i,
+        OK =>  qr/(?:^|\b)OK(?:LA(?:\.|HOMA)?)?\.?(?:\b|$)/i,
+        OR =>  qr/(?:^|\b)OR(?:E(?:G(?:ON)?)?)?\.?(?:\b|$)/i,
+        PA =>  qr/(?:^|\b)P(?:ENNS?(?:YLVANIA)?|A)\.?(?:\b|$)/i,
+        PW =>  qr/(?:^|\b)P(?:AL(?:AU)?|W)\.?(?:\b|$)/i,
+        PR =>  qr/(?:^|\b)PU?(?:ER(?:T(?:O)?)?)?\.?\s*RI?(?:CO)?\.?(?:\b|$)/i,
+        RI =>  qr/(?:^|\b)R(?:H(?:ODE)?)?\.?\s*I(?:S(?:LAND)?)?\.?(?:\b|$)/i,
+        SC =>  qr/(?:^|\b)S(?:OU)?(?:TH)?\.?\s*C(?:AR(?:OLINA?)?)?\.?(?:\b|$)/i,
+        SD =>  qr/(?:^|\b)S(?:OU)?(?:TH)?\.?\s*D(?:AK(?:OTA)?)?\.?(?:\b|$)/i,
+        TN =>  qr/(?:^|\b)TE?N(?:N(?:ESSEE)?)?\.?(?:\b|$)/i,
+        TX =>  qr/(?:^|\b)TE?X(?:AS)?\.?(?:\b|$)/i,
+        UT =>  qr/(?:^|\b)UT(?:AH)?\.?(?:\b|$)/i, 
+        VT =>  qr/(?:^|\b)V(?:ER(?:MO?N?)?T?|T)\.?(?:\b|$)/i,
+        VI =>  qr/(?:^|\b)V(?:IRGIN)?\.?\s*I(?:S(?:LANDS?)?)?\.?(?:\b|$)/i,
+        VA =>  qr/(?:^|\b)V(?:IR(?:GINIA)?|A)\.?(?:\b|$)/i,
+        WA =>  qr/(?:^|\b)WA(?:SH(?:INGTON)?)?\.?(?:\b|$)/i,
+        WV =>  qr/(?:^|\b)W(?:EST)?\.?\s*V(?:IR(?:G(?:INIA)?)?|A)?\.?(?:\b|$)/i,
+        WI =>  qr/(?:^|\b)WI(?:S(?:CONS?(?:IN)?)?)?\.?(?:\b|$)/i,
+        WY =>  qr/(?:^|\b)WYO?(?:MING)?\.?(?:\b|$)/i,
+        AE =>  qr/(?:^|\b)
+            A(?:RM(?:(?:E|[\'\`])?D)?)?\.?
+            \s*
+            (?:F(?:OR(?:CES?)?)?\.?)?
+            \s*
+            (?:AF(?:R(?:ICA)?)?|
+                CA(?:N(?:ADA)?)?|
+                E(?:U(?:R(?:OPE)?)?)?|
+                M(?:ID(?:DLE)?)?\.?\s*E(?:A?ST)?)\.?
+            (?:\b|$)/ix,
+        AA =>  qr/(?:^|\b)
+            A(?:RM(?:(?:E|[\'\`])?D)?)?\.?
+            \s*
+            (?:F(?:OR(?:CES?)?)?\.?)?
+            \s
+            *A(?:M(?:ER(?:ICA)?)?)?\.?
+            (?:\b|$)/ix,
+        AP =>  qr/(?:^|\b)
+            A(?:RM(?:(?:E|[\'\`])?D)?)?\.?
+            \s*
+            (?:F(?:OR(?:CES?)?)?\.?)?
+            \s* P(?:\.|AC(?:\.|IFIC)?)?\.?
+            (?:\b|$)/ix,
+    );
+
 sub standardize {
     my ($self, $address) = @_;
 
@@ -254,6 +366,7 @@ sub standardize {
     $self->_uppercase($newaddr, $results);
     $self->_remove_punctuation($newaddr, $results);
     $self->_replace_designators($newaddr, $results);
+    $self->_replace_state_abbreviations($newaddr, $results);
 
     return $results;
 }
@@ -315,6 +428,26 @@ sub _replace_designators {
         foreach my $sd ( sort { $a cmp $b } keys(%street_suffix_abbrev) ) {
             if ( $val =~ $street_suffix_abbrev{$sd} ) {
                 $val =~ s/$street_suffix_abbrev{$sd}/$sd/gi;
+                $results->set_changed($field, $val);
+                $addr->$field($val);
+            }
+        }
+    }
+}
+
+# Replace State/Province/Possession Abbreviations
+# Uses Abbreviations from Appendix B
+sub _replace_state_abbreviations {
+    my ($self, $addr, $results) = @_;
+
+    my @fields = qw(state);
+    foreach my $field (@fields) {
+        my $val = $addr->$field;
+        next unless defined($val);
+
+        foreach my $st (sort{ $a cmp $b }keys(%state_province_abbrev)) {
+            if($val =~ $state_province_abbrev{$st}) {
+                $val =~ s/$state_province_abbrev{$st}/$st/gi;
                 $results->set_changed($field, $val);
                 $addr->$field($val);
             }
@@ -384,6 +517,24 @@ Punctuation is removed from all fields except C<postal_code>.  Note that
 this isn't really kosher when using address ranges...
 
 L<http://pe.usps.com/text/pub28/pub28c2_007.htm>
+
+=back
+
+=item I<211 Standardized Delivery Address Line and Last Line>
+
+The C<state> field values are translated to their abbreviated form, as 
+given in Appendix B.
+
+L<http://pe.usps.com/text/pub28/pub28apb.htm>
+
+=back
+
+=item I<225.1 Overseas Locations>
+
+Overseas military addresses translate the C<state> field as given in 
+Appendix B.
+
+L<http://pe.usps.com/text/pub28/pub28c2_010.htm>
 
 =back
 

@@ -18,7 +18,7 @@ my $address = Geo::Address::Mail::US->new(
 my $res = $std->standardize($address);
 my $corr = $res->standardized_address;
 cmp_ok($corr->name, 'eq', 'TEST TESTERSON', 'uppercase name');
-cmp_ok($res->changed_count, '==', 1, '1 change');
+cmp_ok($res->changed_count, '==', 3, '3 change(s)');
 cmp_ok($res->standardized_address->street2, 'eq', 'APT #2', 'apt2');
 
 done_testing;
