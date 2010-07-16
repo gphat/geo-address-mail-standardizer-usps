@@ -543,6 +543,8 @@ Cory G Watson, C<< <gphat at cpan.org> >>
 
 =head1 ACKNOWLEDGEMENTS
 
+Albert Croft
+
 =head1 COPYRIGHT & LICENSE
 
 Copyright 2010 Cory G Watson.
