@@ -6,7 +6,6 @@ with 'Geo::Address::Mail::Standardizer';
 our $VERSION = '0.03';
 
 use Geo::Address::Mail::Standardizer::Results;
-use Data::Dumper;
 
 # Defined in C2 - "Secondary Unit Designators"
 my %range_designators = (

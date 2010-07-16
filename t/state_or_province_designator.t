@@ -2848,18 +2848,14 @@ foreach my $k ( sort keys %state_or_province_designator ) {
 
         my $res  = $std->standardize($address);
         my $corr = $res->standardized_address;
-        if (!cmp_ok(
+        cmp_ok(
                 $res->standardized_address->state,
                 'eq', $k,
                 sprintf(
                     q{%s-%02d: %s -> %s},
                     $k, $test_case, $case[$test_case], $k,
                 )
-            )
-            )
-        {
-            print q{Test case: }, $k, q{ - }, $case[$test_case], qq{\n};
-        }
+        );
     }
 }
 

@@ -1,5 +1,9 @@
 Revision history for Geo-Address-Mail-Standardizer::USPS
 
+0.03    Jul 16, 2010
+  * Added tests for range designator, street suffix, and US state/possession abbreviations
+  * Added regex-based code for street suffix and US state/possession abbreviations
+
 0.02    Jul 8, 2010
     * Fix undefined warnings on upper-case conversion
 
