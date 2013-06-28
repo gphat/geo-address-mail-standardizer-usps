@@ -1771,6 +1771,18 @@ my %address_designator = (
         'input'  => '23 Something MT.',
         'output' => '23 SOMETHING MT'
     },
+    'MT-04' => {
+        'input' => '23 Mount Hope Avenue',
+        'output' => '23 MT HOPE AVE'
+    },
+    'MT-05' => {
+        'input' => '23 Mt Hope Ave',
+        'output' => '23 MT HOPE AVE'
+    },
+    'MT-06' => {
+        'input' => '23 Mount. Hope Ave.',
+        'output' => '23 MT HOPE AVE'
+    },
     'MTN-00' => {
         'input'  => '23 Something MNTAIN',
         'output' => '23 SOMETHING MTN'
@@ -3030,7 +3042,19 @@ my %address_designator = (
     'XRD-02' => {
         'input'  => '23 Something XRD.',
         'output' => '23 SOMETHING XRD'
-    }
+    },
+    'SPG-RD-00' => {
+        'input' => '123 Sandy Spring Road',
+        'output' => '123 SANDY SPG RD'
+    },
+    'SPG-RD-01' => {
+        'input' => '123 Sandy Spring Rd',
+        'output' => '123 SANDY SPG RD'
+    },
+    'SPG-RD-02' => {
+        'input' => '123 Sandy Spring Rd.',
+        'output' => '123 SANDY SPG RD'
+    },
 );
 
 foreach my $k ( sort keys %address_designator ) {
